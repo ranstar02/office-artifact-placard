@@ -12,6 +12,7 @@ and it reads nothing outside this repository.
 """
 
 import os
+import sys
 from pathlib import Path
 
 # Catalogue parts of the placard.
@@ -37,6 +38,15 @@ def main() -> None:
     output = Path(os.environ.get("MAKEFUN_OUTPUT", "/output/entry.txt"))
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(text, encoding="utf-8")
+    # Self-verification: read the file back and confirm it is exactly
+    # the composed placard, byte for byte, within the 1-180 char gate.
+    read_back = output.read_bytes()
+    assert read_back == text.encode("utf-8"), "entry.txt differs from placard"
+    assert 1 <= len(text) <= 180, f"placard must be 1-180 chars, got {len(text)}"
+    print(
+        f"wrote {output}: {len(text)} chars, {len(read_back)} bytes",
+        file=sys.stderr,
+    )
 
 
 if __name__ == "__main__":
